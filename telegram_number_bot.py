@@ -180,7 +180,7 @@ def sorted_countries(sort_by: str) -> list:
         return sorted(COUNTRIES, key=lambda c: c[2])
     if sort_by == "stock":
         return sorted(COUNTRIES, key=lambda c: -c[3])
-    return sorted(COUNTRIES, key=lambda c: c[0])   # A-Z
+    return sorted(COUNTRIES, key=lambda c: c[0].split(" ", 1)[-1])   # A-Z by name
 
 
 def build_message(sort_by: str, page: int) -> str:
@@ -212,9 +212,7 @@ def build_message(sort_by: str, page: int) -> str:
     for name, code, price, stock in chunk:
         # pad name to fixed width for alignment
         padded = f"{name:<20}"[:20]
-        lines.append(f"  {padded}  ${price:.2f}   \[{stock}\]")
-
-    table = "\n".join(lines)
+        lines.append(f"  {padded}  ${price:.2f}   [{stock}]")
 
     text = (
         f"{MENU_HEADER}\n\n"
@@ -264,7 +262,7 @@ def build_keyboard(sort_by: str, page: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([sort_row, nav_row])
 
 
-# command ha1ndlers
+# command handlers
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """/start — show the price list in the bot chat."""
@@ -329,6 +327,7 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text=build_message(sort_by, page),
         parse_mode="MarkdownV2",
         reply_markup=build_keyboard(sort_by, page),
+        link_preview_options=LinkPreviewOptions(is_disabled=True),
     )
 
 
